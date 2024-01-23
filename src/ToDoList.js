@@ -5,12 +5,26 @@ import Footer from "./Footer";
 import AddToDo from "./AddToDo";
 
 const ToDoList = () => {
-  const [tasks, setTasks] = useState(JSON.parse(localStorage.getItem('todolist')) || []);
+  const [tasks, setTasks] = useState(
+    JSON.parse(localStorage.getItem("todolist")) || []
+  );
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem('todolist', JSON.stringify(tasks))
-  }, [tasks])
-  
+    if (search.trim() === "") {
+      setSearchResults([]);
+    } else {
+      const filteredResults = tasks.filter((task) =>
+        task.task.toLowerCase().includes(search.toLowerCase())
+      );
+      setSearchResults(filteredResults);
+    }
+  }, [tasks, search]);
+
+  useEffect(() => {
+    localStorage.setItem("todolist", JSON.stringify(tasks));
+  }, [tasks]);
 
   const handleCheck = (id) => {
     const listTasks = tasks.map((task) =>
@@ -26,25 +40,55 @@ const ToDoList = () => {
 
   return (
     <>
-    <AddToDo 
-        tasks={tasks}
-        setTasks={setTasks}
-    />
-    {tasks.length ? (
-      <><main>
-                  <ul>
-                      {tasks.map((task) => (
-                          <ToDoItem
-                              key={task.id}
-                              task={task}
-                              handleCheck={handleCheck}
-                              handleDelete={handleDelete} />
-                      ))}
-                  </ul>
-              </main>
-              <Footer length={tasks.length} /></>
+      <AddToDo tasks={tasks} setTasks={setTasks} />
+      <div>
+        <label>
+          Search:
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </label>
+      </div>
+
+      {searchResults.length ? (
+        <>
+          <main>
+            <ul>
+              {searchResults.map((task) => (
+                <ToDoItem
+                  key={task.id}
+                  task={task}
+                  handleCheck={handleCheck}
+                  handleDelete={handleDelete}
+                />
+              ))}
+            </ul>
+          </main>
+        </>
       ) : (
-      <p>To-Do list is empty</p>
+        <>
+          {tasks.length ? (
+            <>
+              <main>
+                <ul>
+                  {tasks.map((task) => (
+                    <ToDoItem
+                      key={task.id}
+                      task={task}
+                      handleCheck={handleCheck}
+                      handleDelete={handleDelete}
+                    />
+                  ))}
+                </ul>
+              </main>
+              <Footer length={tasks.length} />
+            </>
+          ) : (
+            <p>To-Do list is empty</p>
+          )}
+        </>
       )}
     </>
   );
